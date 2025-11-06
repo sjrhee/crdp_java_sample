@@ -1,4 +1,4 @@
-# CRDP Java Ultra Simple Demo
+# CRDP Java Simple Demo
 
 **단 하나의 파일**로 CRDP API 테스트하기!
 
