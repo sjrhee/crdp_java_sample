@@ -12,7 +12,7 @@ public class SimpleDemo {
         // 기본 설정
         String host = "sjrhee.ddns.net";
         int port = 32082;
-        String policy = "P03";
+        String policy = "P01";
         String data = "1234567890123";
         
         // 명령행 처리
@@ -29,7 +29,7 @@ public class SimpleDemo {
                 System.out.println("사용법: java SimpleDemo [옵션]");
                 System.out.println("  --host HOST     서버 주소 (기본: sjrhee.ddns.net)");
                 System.out.println("  --port PORT     포트 번호 (기본: 32082)");
-                System.out.println("  --policy POLICY 정책 이름 (기본: P03)");
+                System.out.println("  --policy POLICY 정책 이름 (기본: P01)");
                 System.out.println("  --data DATA     보호할 데이터 (기본: 1234567890123)");
                 System.out.println("  --help          도움말");
                 return;
