@@ -44,10 +44,12 @@ cd crdp_java_sample
 ## 옵션
 
 ```bash
-./run.sh --help                    # 도움말
-./run.sh --data "9876543210987"    # 다른 데이터
-./run.sh --host example.com        # 다른 서버
-./run.sh --port PORT               # 포트 번호
+java SimpleDemo --help                       # 도움말
+java SimpleDemo --data "9876543210987"       # 다른 데이터
+java SimpleDemo --host example.com           # 다른 서버
+java SimpleDemo --port 8080                  # 포트 번호
+java SimpleDemo --policy "P02"               # 다른 정책
+java SimpleDemo --host example.com --port 9000 --policy "P03" --data "987654321"  # 여러 옵션 조합
 ```
 
 ## 파일 구조

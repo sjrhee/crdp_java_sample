@@ -7,13 +7,18 @@ import java.nio.charset.StandardCharsets;
  * 단순한 CRDP 데모 - 하나의 파일로 모든 기능 제공
  */
 public class SimpleDemo {
+    // 기본 설정값들
+    private static final String DEFAULT_HOST = "49.50.138.96";
+    private static final int DEFAULT_PORT = 32082;
+    private static final String DEFAULT_POLICY = "P01";
+    private static final String DEFAULT_DATA = "1234567890123";
     
     public static void main(String[] args) {
         // 기본 설정
-        String host = "49.50.138.96";
-        int port = 32082;
-        String policy = "P01";
-        String data = "1234567890123";
+        String host = DEFAULT_HOST;
+        int port = DEFAULT_PORT;
+        String policy = DEFAULT_POLICY;
+        String data = DEFAULT_DATA;
         
         // 명령행 처리
         for (int i = 0; i < args.length; i++) {
@@ -27,10 +32,10 @@ public class SimpleDemo {
                 data = args[++i];
             } else if ("--help".equals(args[i])) {
                 System.out.println("사용법: java SimpleDemo [옵션]");
-                System.out.println("  --host HOST     서버 주소 (기본: 49.50.138.96)");
-                System.out.println("  --port PORT     포트 번호 (기본: 32082)");
-                System.out.println("  --policy POLICY 정책 이름 (기본: P01)");
-                System.out.println("  --data DATA     보호할 데이터 (기본: 1234567890123)");
+                System.out.println("  --host HOST     서버 주소 (기본: " + DEFAULT_HOST + ")");
+                System.out.println("  --port PORT     포트 번호 (기본: " + DEFAULT_PORT + ")");
+                System.out.println("  --policy POLICY 정책 이름 (기본: " + DEFAULT_POLICY + ")");
+                System.out.println("  --data DATA     보호할 데이터 (기본: " + DEFAULT_DATA + ")");
                 System.out.println("  --help          도움말");
                 return;
             }
