@@ -13,6 +13,18 @@ public class SimpleDemo {
     private static final String DEFAULT_POLICY = "P01";
     private static final String DEFAULT_DATA = "1234567890123";
     
+    /**
+     * 도움말 출력
+     */
+    private static void showHelp() {
+        System.out.println("사용법: java SimpleDemo [옵션]");
+        System.out.println("  --host HOST     서버 주소 (기본: " + DEFAULT_HOST + ")");
+        System.out.println("  --port PORT     포트 번호 (기본: " + DEFAULT_PORT + ")");
+        System.out.println("  --policy POLICY 정책 이름 (기본: " + DEFAULT_POLICY + ")");
+        System.out.println("  --data DATA     보호할 데이터 (기본: " + DEFAULT_DATA + ")");
+        System.out.println("  --help          도움말");
+    }
+    
     public static void main(String[] args) {
         // 기본 설정
         String host = DEFAULT_HOST;
@@ -22,21 +34,56 @@ public class SimpleDemo {
         
         // 명령행 처리
         for (int i = 0; i < args.length; i++) {
-            if ("--host".equals(args[i]) && i + 1 < args.length) {
-                host = args[++i];
-            } else if ("--port".equals(args[i]) && i + 1 < args.length) {
-                port = Integer.parseInt(args[++i]);
-            } else if ("--policy".equals(args[i]) && i + 1 < args.length) {
-                policy = args[++i];
-            } else if ("--data".equals(args[i]) && i + 1 < args.length) {
-                data = args[++i];
+            if ("--host".equals(args[i])) {
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    host = args[++i];
+                } else {
+                    System.err.println("오류: --host 옵션에 값이 필요합니다.");
+                    System.err.println();
+                    showHelp();
+                    return;
+                }
+            } else if ("--port".equals(args[i])) {
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    try {
+                        port = Integer.parseInt(args[++i]);
+                    } catch (NumberFormatException e) {
+                        System.err.println("오류: --port 옵션에 유효한 숫자가 필요합니다: " + args[i]);
+                        System.err.println();
+                        showHelp();
+                        return;
+                    }
+                } else {
+                    System.err.println("오류: --port 옵션에 값이 필요합니다.");
+                    System.err.println();
+                    showHelp();
+                    return;
+                }
+            } else if ("--policy".equals(args[i])) {
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    policy = args[++i];
+                } else {
+                    System.err.println("오류: --policy 옵션에 값이 필요합니다.");
+                    System.err.println();
+                    showHelp();
+                    return;
+                }
+            } else if ("--data".equals(args[i])) {
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    data = args[++i];
+                } else {
+                    System.err.println("오류: --data 옵션에 값이 필요합니다.");
+                    System.err.println();
+                    showHelp();
+                    return;
+                }
             } else if ("--help".equals(args[i])) {
-                System.out.println("사용법: java SimpleDemo [옵션]");
-                System.out.println("  --host HOST     서버 주소 (기본: " + DEFAULT_HOST + ")");
-                System.out.println("  --port PORT     포트 번호 (기본: " + DEFAULT_PORT + ")");
-                System.out.println("  --policy POLICY 정책 이름 (기본: " + DEFAULT_POLICY + ")");
-                System.out.println("  --data DATA     보호할 데이터 (기본: " + DEFAULT_DATA + ")");
-                System.out.println("  --help          도움말");
+                showHelp();
+                return;
+            } else {
+                System.err.println("오류: 알 수 없는 옵션입니다: " + args[i]);
+                System.err.println();
+                showHelp();
                 return;
             }
         }
