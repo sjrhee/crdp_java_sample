@@ -52,13 +52,81 @@ java SimpleDemo --policy P01               # 다른 정책
 java SimpleDemo --host 49.50.138.96 --port 32082 --policy P01 --data 1234567890123  # 여러 옵션 조합
 ```
 
+## 설정 관리 (Properties 파일)
+
+### SimpleDemo.properties 파일
+
+기본값을 외부 설정 파일에서 관리할 수 있습니다:
+
+```properties
+# 서버 주소
+host=49.50.138.96
+
+# 서버 포트
+port=32082
+
+# 보호 정책명
+policy=P01
+
+# 테스트 데이터
+data=1234567890123
+
+# HTTP 타임아웃 (초 단위)
+timeout=10
+```
+
+### 사용 방법
+
+1. **기본값 사용** (properties 파일 적용됨)
+```bash
+./run.sh
+```
+
+2. **설정 파일 변경 후 실행**
+```bash
+# SimpleDemo.properties 파일 수정
+vim SimpleDemo.properties
+
+# 변경된 설정으로 실행 (재컴파일 불필요)
+./run.sh
+```
+
+3. **명령행 옵션으로 덮어쓰기** (properties 설정보다 우선)
+```bash
+./run.sh --data "다른데이터"        # properties의 data 값 무시
+./run.sh --host 192.168.1.1        # properties의 host 값 무시
+```
+
+### 우선순위
+
+**명령행 옵션 > properties 파일 > 하드코딩된 기본값**
+
+- 명령행에서 지정한 옵션이 최우선
+- properties 파일의 설정값이 그 다음
+- properties 파일이 없으면 코드의 기본값 사용
+
+### 환경별 설정
+
+서로 다른 환경에 맞는 properties 파일을 관리할 수 있습니다:
+
+```bash
+# 개발 환경
+cp SimpleDemo-dev.properties SimpleDemo.properties
+./run.sh
+
+# 운영 환경
+cp SimpleDemo-prod.properties SimpleDemo.properties
+./run.sh
+```
+
 ## 파일 구조
 
 ```
 .
-├── SimpleDemo.java      # 🎯 모든 기능이 여기 있음!
-├── build.sh            # 빌드 스크립트
-└── run.sh              # 실행 스크립트 (빌드 후 생성)
+├── SimpleDemo.java            # 🎯 모든 기능이 여기 있음!
+├── SimpleDemo.properties      # ⚙️ 설정 파일 (properties)
+├── build.sh                   # 빌드 스크립트
+└── run.sh                      # 실행 스크립트 (빌드 후 생성)
 ```
 
 ## 수동 실행
