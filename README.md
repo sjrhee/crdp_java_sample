@@ -8,13 +8,6 @@
 - 📦 **외부 의존성 없음** - 순수 Java만 사용
 - ⚡ **빠른 실행** - 컴파일하고 바로 실행
 
-### CRDP 구조 및 특징
-
-![CRDP 구조도](image/CRDP구조도.png)
-
-![CRDP 특징](image/CRDP특징.png)
-
-
 ## 요구사항
 
 - Java 8+
@@ -396,7 +389,13 @@ catch (Exception e) {
 }
 ```
 
-## 관련 링크
+### CRDP 구조 및 특징
 
+![CRDP 구조도](image/CRDP구조도.png)
+
+![CRDP 특징](image/CRDP특징.png)
+
+
+## 관련 링크
 - [CRDP API 문서](https://thalesdocs.com/ctp/con/crdp/latest/crdp-apis/index.html)
 - [GitHub 저장소](https://github.com/sjrhee/crdp_java_sample)
