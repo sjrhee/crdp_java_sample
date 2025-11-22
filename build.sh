@@ -5,10 +5,10 @@ echo "=== 간단 빌드 ==="
 # 기존 빌드 정리
 rm -f *.class SimpleDemo MinimalDemo
 
-# 컴파일
+# 컴파일 (Java 11 호환성 유지)
 echo "컴파일 중..."
-javac SimpleDemo.java
-javac MinimalDemo.java
+javac -source 11 -target 11 SimpleDemo.java
+javac -source 11 -target 11 MinimalDemo.java
 
 if [ $? -eq 0 ]; then
     echo "컴파일 성공!"
