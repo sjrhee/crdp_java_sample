@@ -37,7 +37,13 @@ public class MinimalDemo {
         String policy = config.getProperty("policy", "P01");
         String data = config.getProperty("data", "test");
         int timeout = Integer.parseInt(config.getProperty("timeout", "10"));
-        String token = config.getProperty("token", "");
+        String token = config.getProperty("token", "").trim();
+        
+        // JWT 토큰 필수 확인
+        if (token.isEmpty()) {
+            System.err.println("오류: JWT 토큰이 필요합니다. MinimalDemo.properties의 token 설정을 확인하세요.");
+            System.exit(1);
+        }
         
         String protectUrl = String.format("https://%s:%d/v1/protect", host, port);
         String revealUrl = String.format("https://%s:%d/v1/reveal", host, port);
@@ -157,7 +163,7 @@ public class MinimalDemo {
     }
     
     /**
-     * 자체 서명 인증서를 신뢰하는 SSL Context 생성 (테스트 환경용)
+     * 자체 서명 인증서를 신뢰하는 SSL Context 생성 (사내 환경용)
      */
     private static SSLContext getInsecureSslContext() throws Exception {
         SSLContext context = SSLContext.getInstance("TLS");
