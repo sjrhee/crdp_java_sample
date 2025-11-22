@@ -53,8 +53,8 @@
 | 요소 | 설명 |
 |------|------|
 | Authorization Header | `Authorization: Bearer $JWT_TOKEN` |
-| Protect 엔드포인트 | `http://crdp-url/v1/protect` |
-| Reveal 엔드포인트 | `http://crdp-url/v1/reveal` |
+| Protect 엔드포인트 | `https://crdp-url/v1/protect` |
+| Reveal 엔드포인트 | `https://crdp-url/v1/reveal` |
 | 정책명 | `"protection_policy_name"` |
 | 보호 데이터 | `"data"` 또는 `"protected_data"` |
 
