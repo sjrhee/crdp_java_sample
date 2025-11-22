@@ -59,5 +59,5 @@ System.out.println("복호화: " + decrypted);
 
 ## 🔗 관련 링크
 - [CRDP API 문서](https://thalesdocs.com/ctp/con/crdp/latest/crdp-apis/index.html)
-- [**CipherTrust 정책 적용 방안 및 구조도**](CipherTrust_정책_적용_방안.md) - *CRDP 구조 및 특징 이미지 포함*
+- [**CipherTrust 정책 적용 방안 및 구조도**](docs/CipherTrust_정책_적용_방안.md) - *CRDP 구조 및 특징 이미지 포함*
 - [GitHub 저장소](https://github.com/sjrhee/crdp_java_sample)
