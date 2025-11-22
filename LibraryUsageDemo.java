@@ -41,29 +41,9 @@ public class LibraryUsageDemo {
             // [Step 1] 초기화
             CrdpClient client = initializeClient();
 
-            // [Step 2] 반복 실행 테스트
-            String[] testDataList = {
-                    "Hello, CRDP!",
-                    "Sensitive Data 123",
-                    "User Personal Info"
-            };
-
-            System.out.println("\n>>> 암호화/복호화 반복 테스트 시작");
-
-            for (String original : testDataList) {
-                processData(client, original);
-                System.out.println("------------------------------------------------");
-            }
-
-        } catch (Exception e) {
-            System.err.println("치명적 오류: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    // 데이터 처리 로직 (반복 호출됨)
-    private static void processData(CrdpClient client, String originalData) {
-        try {
+            // [Step 2] 실행 (단일 호출)
+            String originalData = "Hello, CRDP!";
+            System.out.println("\n>>> 실행 테스트");
             System.out.println("원본: " + originalData);
 
             // 암호화
@@ -80,8 +60,10 @@ public class LibraryUsageDemo {
             } else {
                 System.err.println("결과: 불일치 (실패)");
             }
+
         } catch (Exception e) {
-            System.err.println("처리 중 오류 발생: " + e.getMessage());
+            System.err.println("오류: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
