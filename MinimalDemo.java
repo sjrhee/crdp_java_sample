@@ -45,6 +45,9 @@ public class MinimalDemo {
             System.exit(1);
         }
         
+        // 헬스 체크 포트 (CRDP 포트 32x82 -> 헬스 체크 포트 32x80)
+        int healthPort = (port / 100) * 100 + 80;
+        String healthUrl = String.format("http://%s:%d/healthz", host, healthPort);
         String protectUrl = String.format("https://%s:%d/v1/protect", host, port);
         String revealUrl = String.format("https://%s:%d/v1/reveal", host, port);
         
@@ -52,6 +55,15 @@ public class MinimalDemo {
         System.out.println("서버: https://" + host + ":" + port);
         System.out.println("정책: " + policy);
         System.out.println("데이터: " + data);
+        
+        // 0. 헬스 체크
+        System.out.println("\n0. 헬스 체크 중...");
+        String health = getHealth(healthUrl, timeout);
+        if (health == null) {
+            System.err.println("헬스 체크 실패");
+            return;
+        }
+        System.out.println("   상태: " + health);
         
         try {
             // 1. 데이터 보호
@@ -85,6 +97,40 @@ public class MinimalDemo {
         } catch (Exception e) {
             System.err.println("오류: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 헬스 체크 (GET 요청)
+     */
+    private static String getHealth(String urlStr, int timeout) {
+        try {
+            URL url = new URL(urlStr);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(timeout * 1000);
+            conn.setReadTimeout(timeout * 1000);
+            
+            int status = conn.getResponseCode();
+            if (status == 200) {
+                // 응답 읽기
+                StringBuilder response = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+                return "정상 (" + response.toString().trim() + ")";
+            } else {
+                return "HTTP " + status;
+            }
+            
+        } catch (Exception e) {
+            System.err.println("헬스 체크 실패: " + e.getMessage());
+            return null;
         }
     }
     
