@@ -62,3 +62,11 @@
 
 - Web UI JWT 발생기 제공됨
 - 접근 정책과 사용자 정책을 조합하여 세밀한 보안 등급별 제어 가능
+
+## 7. 구조 및 특징
+
+### CRDP 구조도
+![CRDP 구조도](image/CRDP구조도.png)
+
+### CRDP 특징
+![CRDP 특징](image/CRDP특징.png)
