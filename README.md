@@ -1,402 +1,62 @@
-# CRDP Java Simple Demo
+# CRDP Java Sample & Library
 
-**단 하나의 파일**로 CRDP API 테스트하기!
+**CRDP(CipherTrust RESTful Data Protection) API**를 Java 애플리케이션에서 가장 쉽게 사용하는 방법입니다.
 
-## ✨ 특징
+## 🚀 30초 만에 시작하기
 
-- 🚀 **하나의 파일** - SimpleDemo.java 만으로 모든 기능
-- 📦 **외부 의존성 없음** - 순수 Java만 사용
-- ⚡ **빠른 실행** - 컴파일하고 바로 실행
+복잡한 설정 없이 **라이브러리(`crdp-client.jar`)**를 추가하고 바로 사용하세요.
 
-## 요구사항
-
-- Java 8+
-
-## 30초 시작
+### 1. 라이브러리 빌드
 
 ```bash
-# 다운로드
-git clone https://github.com/sjrhee/crdp_java_sample.git
-cd crdp_java_sample
-
-# 빌드 & 실행
 ./build.sh
-./run.sh
+# 생성된 crdp-client.jar 파일을 프로젝트에 추가하세요.
 ```
 
-## 출력 예시
-
-```
-=== CRDP 간단 데모 ===
-서버: 49.50.138.96:32082
-정책: P01
-데이터: 1234567890123
-
-1. 데이터 보호 중... 성공: 435b7e99fdf33e10a29e4708710cacc2
-2. 데이터 복원 중... 성공: 1234567890123
-
-3. 검증 결과:
-   원본: 1234567890123
-   복원: 1234567890123
-   일치: 예
-```
-
-## 옵션
-
-```bash
-java SimpleDemo --help                                      # 도움말
-java SimpleDemo --data 9876543210987                        # 다른 데이터
-java SimpleDemo --host 49.50.138.96                         # 다른 서버
-java SimpleDemo --port 32082                                # 포트 번호
-java SimpleDemo --policy P01                                # 다른 정책
-java SimpleDemo --tls                                       # HTTPS 사용
-java SimpleDemo --token "JWT_TOKEN"                         # JWT 토큰
-java SimpleDemo --tls --token "JWT_TOKEN"                   # TLS + JWT 함께
-```
-
-## 설정 관리 (Properties 파일)
-
-### SimpleDemo.properties 파일
-
-기본값을 외부 설정 파일에서 관리할 수 있습니다:
-
-```properties
-# 서버 주소
-host=49.50.138.96
-
-# 서버 포트
-port=32082
-
-# 보호 정책명
-policy=P01
-
-# 테스트 데이터
-data=1234567890123
-
-# HTTP 타임아웃 (초 단위)
-timeout=10
-
-# HTTPS 사용 (true/false)
-tls=false
-
-# JWT 토큰 (Authorization 헤더용)
-token=
-```
-
-### 사용 방법
-
-1. **기본값 사용** (properties 파일 적용됨)
-```bash
-./run.sh
-```
-
-2. **설정 파일 변경 후 실행**
-```bash
-# SimpleDemo.properties 파일 수정
-vim SimpleDemo.properties
-
-# 변경된 설정으로 실행 (재컴파일 불필요)
-./run.sh
-```
-
-3. **명령행 옵션으로 덮어쓰기** (properties 설정보다 우선)
-```bash
-./run.sh --data "다른데이터"        # properties의 data 값 무시
-./run.sh --host 192.168.1.1        # properties의 host 값 무시
-```
-
-### 우선순위
-
-**명령행 옵션 > properties 파일 > 하드코딩된 기본값**
-
-- 명령행에서 지정한 옵션이 최우선
-- properties 파일의 설정값이 그 다음
-- properties 파일이 없으면 코드의 기본값 사용
-
-### 환경별 설정
-
-서로 다른 환경에 맞는 properties 파일을 관리할 수 있습니다:
-
-```bash
-# 개발 환경
-cp SimpleDemo-dev.properties SimpleDemo.properties
-./run.sh
-
-# 운영 환경
-cp SimpleDemo-prod.properties SimpleDemo.properties
-./run.sh
-```
-
-## 파일 구조
-
-```
-.
-├── SimpleDemo.java            # 🎯 모든 기능 (HTTP/HTTPS, JWT 지원)
-├── SimpleDemo.properties      # ⚙️ 설정 파일
-├── build.sh                   # 빌드 스크립트
-└── run.sh                      # 실행 스크립트
-```
-
-## TLS/HTTPS & JWT 지원
-
-### HTTPS 사용
-```bash
-# properties 파일에서
-tls=true
-
-# 또는 명령행
-./run.sh --tls
-```
-
-### JWT 토큰 인증
-```bash
-# properties 파일에서
-token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# 또는 명령행
-./run.sh --token "your-jwt-token"
-```
-
-### 자체 서명 인증서 지원
-- HTTPS에서 자동으로 자체 서명 인증서(Self-signed certificate) 처리
-- 테스트 환경에서 별도 설정 불필요
-
-## 수동 실행
-
-```bash
-# 컴파일
-javac SimpleDemo.java
-
-# 실행
-java SimpleDemo
-java SimpleDemo --data "1234567890123"
-```
-
-## 코드 설명
-
-`SimpleDemo.java` 하나의 파일에:
-- ✅ HTTP 클라이언트
-- ✅ JSON 파싱
-- ✅ CLI 옵션 처리
-- ✅ CRDP API 호출 (protect/reveal)
-
-## Protect/Reveal 구현 방법
-
-### 1️⃣ HTTP POST 요청 (`post()` 메서드)
+### 2. 코드 작성 (복사-붙여넣기용)
 
 ```java
-private static String post(String urlString, String json) {
-    try {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        
-        // HTTP 설정
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);  // 10초 타임아웃
-        
-        // JSON 요청 전송
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(json.getBytes(StandardCharsets.UTF_8));
-        }
-        
-        // 응답 읽기
-        int status = conn.getResponseCode();
-        InputStream is = (status >= 200 && status < 300) 
-            ? conn.getInputStream() 
-            : conn.getErrorStream();
-        
-        // 응답 본문 파싱
-        StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(
-            new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                response.append(line);
-            }
-        }
-        
-        return response.toString();
-    } catch (Exception e) {
-        System.err.println("HTTP 오류: " + e.getMessage());
-        return null;
-    }
-}
+// 1. 초기화 (호스트, 포트, 정책, 토큰, 타임아웃)
+CrdpClient client = new CrdpClient("192.168.0.233", 32182, "P01", "JWT_TOKEN...", 10);
+
+// 2. 암호화
+String encrypted = client.protect("주민등록번호 123456-1234567");
+System.out.println("암호화: " + encrypted);
+
+// 3. 복호화
+String decrypted = client.reveal(encrypted);
+System.out.println("복호화: " + decrypted);
 ```
 
-**핵심 포인트:**
-- `HttpURLConnection` 사용 (외부 라이브러리 불필요)
-- JSON 데이터를 UTF-8로 인코딩하여 전송
-- 성공(200-299)과 오류(4xx, 5xx) 응답 구분 처리
+---
 
-### 2️⃣ Protect (데이터 보호)
+## 📦 파일 구조
 
-```java
-private static String protect(String host, int port, String policy, String data) {
-    String url = "http://" + host + ":" + port + "/v1/protect";
-    String json = "{\"protection_policy_name\":\"" + policy 
-        + "\",\"data\":\"" + data + "\"}";
-    String response = post(url, json);
-    return extractValue(response, "protected_data");
-}
+- **`crdp-client.jar`**: 배포용 라이브러리 (빌드 후 생성됨)
+- **`CrdpClient.java`**: 라이브러리 소스 코드 (핵심 로직)
+- **`LibraryUsageDemo.java`**: 위 예제의 전체 실행 가능한 소스 코드
+- `SimpleDemo.java` / `MinimalDemo.java`: (참고용) HTTP 통신 과정을 직접 구현한 예제
+
+## 🛠️ 실행 방법
+
+### 라이브러리 데모 실행
+```bash
+./build.sh
+./run_lib_demo.sh
 ```
 
-**요청 JSON 형식:**
-```json
-{
-  "protection_policy_name": "P01",
-  "data": "1234567890123"
-}
+### 기존 데모 실행 (참고용)
+```bash
+./run.sh          # CLI 옵션 지원 버전
+./run_minimal.sh  # 설정 파일 기반 최소 버전
 ```
 
-**응답 JSON 형식:**
-```json
-{
-  "protected_data": "435b7e99fdf33e10a29e4708710cacc2"
-}
-```
+## 💡 특징
 
-**프로세스:**
-1. 정책 이름과 보호할 데이터를 JSON으로 포장
-2. `/v1/protect` 엔드포인트에 POST 요청
-3. 응답에서 `protected_data` 필드 추출 (암호화/토큰화된 값)
+- **Zero Dependency**: 외부 라이브러리(Jackson, Gson, Apache HttpClient 등) 의존성 없음
+- **Easy Integration**: `CrdpClient.java` 파일 하나만 복사해서 프로젝트에 넣어도 바로 동작
+- **Secure**: HTTPS 및 JWT 인증 지원
 
-### 3️⃣ Reveal (데이터 복원)
-
-```java
-private static String reveal(String host, int port, String policy, String protectedData) {
-    String url = "http://" + host + ":" + port + "/v1/reveal";
-    String json = "{\"protection_policy_name\":\"" + policy 
-        + "\",\"protected_data\":\"" + protectedData + "\"}";
-    String response = post(url, json);
-    return extractValue(response, "data");
-}
-```
-
-**요청 JSON 형식:**
-```json
-{
-  "protection_policy_name": "P01",
-  "protected_data": "435b7e99fdf33e10a29e4708710cacc2"
-}
-```
-
-**응답 JSON 형식:**
-```json
-{
-  "data": "1234567890123"
-}
-```
-
-**프로세스:**
-1. 정책 이름과 보호된 데이터를 JSON으로 포장
-2. `/v1/reveal` 엔드포인트에 POST 요청
-3. 응답에서 `data` 필드 추출 (복원된 원본 데이터)
-
-### 4️⃣ JSON 파싱 (`extractValue()` 메서드)
-
-```java
-private static String extractValue(String json, String key) {
-    if (json == null || json.trim().isEmpty()) return null;
-    
-    // JSON 객체 범위 찾기
-    int startBrace = json.indexOf('{');
-    int endBrace = json.lastIndexOf('}');
-    if (startBrace == -1 || endBrace == -1 || startBrace >= endBrace) 
-        return null;
-    
-    String content = json.substring(startBrace + 1, endBrace).trim();
-    
-    // "key": 패턴 찾기
-    String keyPattern = "\"" + key + "\":";
-    int keyIndex = content.indexOf(keyPattern);
-    if (keyIndex == -1) return null;
-    
-    int valueStart = keyIndex + keyPattern.length();
-    
-    // 공백 건너뛰기
-    while (valueStart < content.length() 
-        && Character.isWhitespace(content.charAt(valueStart))) {
-        valueStart++;
-    }
-    
-    if (valueStart >= content.length()) return null;
-    
-    // 문자열 값 추출 (따옴표로 감싼 경우)
-    char firstChar = content.charAt(valueStart);
-    if (firstChar == '"') {
-        valueStart++;
-        int valueEnd = valueStart;
-        while (valueEnd < content.length() 
-            && content.charAt(valueEnd) != '"') {
-            if (content.charAt(valueEnd) == '\\') {
-                valueEnd++;  // 이스케이프 문자 건너뛰기
-            }
-            valueEnd++;
-        }
-        return content.substring(valueStart, valueEnd);
-    }
-    
-    return null;
-}
-```
-
-**JSON 파싱 전략:**
-- 외부 JSON 라이브러리 사용 안 함 (gson, jackson 등)
-- 문자열 기반 파싱으로 단순성 유지
-- 이스케이프 문자(`\"`) 처리
-- 쉼표와 중괄호를 경계로 하여 값 추출
-
-### 완전한 워크플로우
-
-```
-1. 입력 데이터: "1234567890123"
-   ↓
-2. Protect API 호출 (암호화/토큰화)
-   URL: http://49.50.138.96:32082/v1/protect
-   JSON: {"protection_policy_name":"P01","data":"1234567890123"}
-   ↓
-3. 보호된 데이터 수신: "435b7e99fdf33e10a29e4708710cacc2"
-   ↓
-4. Reveal API 호출 (복호화/디토큰화)
-   URL: http://49.50.138.96:32082/v1/reveal
-   JSON: {"protection_policy_name":"P01","protected_data":"435b7e99fdf33e10a29e4708710cacc2"}
-   ↓
-5. 복원된 데이터 수신: "1234567890123"
-   ↓
-6. 검증: 원본 == 복원 ✓
-```
-
-### 에러 처리
-
-```java
-// HTTP 오류 처리
-if (status < 200 || status >= 300) {
-    System.err.println("실패: HTTP " + status);
-    return null;
-}
-
-// JSON 파싱 실패 처리
-if (protectedData == null) {
-    System.err.println("실패: 보호된 데이터를 찾을 수 없음");
-    return null;
-}
-
-// 네트워크 오류 처리
-catch (Exception e) {
-    System.err.println("오류: " + e.getMessage());
-}
-```
-
-### CRDP 구조 및 특징
-
-![CRDP 구조도](image/CRDP구조도.png)
-
-![CRDP 특징](image/CRDP특징.png)
-
-
-## 관련 링크
+## 🔗 관련 링크
 - [CRDP API 문서](https://thalesdocs.com/ctp/con/crdp/latest/crdp-apis/index.html)
-- [CipherTrust 정책 적용 방안](CipherTrust_정책_적용_방안.md)
 - [GitHub 저장소](https://github.com/sjrhee/crdp_java_sample)
