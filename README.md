@@ -51,12 +51,14 @@ cd crdp_java_sample
 ## 옵션
 
 ```bash
-java SimpleDemo --help                       # 도움말
-java SimpleDemo --data 9876543210987         # 다른 데이터
-java SimpleDemo --host 49.50.138.96          # 다른 서버
-java SimpleDemo --port 32082                  # 포트 번호
-java SimpleDemo --policy P01               # 다른 정책
-java SimpleDemo --host 49.50.138.96 --port 32082 --policy P01 --data 1234567890123  # 여러 옵션 조합
+java SimpleDemo --help                                      # 도움말
+java SimpleDemo --data 9876543210987                        # 다른 데이터
+java SimpleDemo --host 49.50.138.96                         # 다른 서버
+java SimpleDemo --port 32082                                # 포트 번호
+java SimpleDemo --policy P01                                # 다른 정책
+java SimpleDemo --tls                                       # HTTPS 사용
+java SimpleDemo --token "JWT_TOKEN"                         # JWT 토큰
+java SimpleDemo --tls --token "JWT_TOKEN"                   # TLS + JWT 함께
 ```
 
 ## 설정 관리 (Properties 파일)
@@ -80,6 +82,12 @@ data=1234567890123
 
 # HTTP 타임아웃 (초 단위)
 timeout=10
+
+# HTTPS 사용 (true/false)
+tls=false
+
+# JWT 토큰 (Authorization 헤더용)
+token=
 ```
 
 ### 사용 방법
@@ -130,11 +138,35 @@ cp SimpleDemo-prod.properties SimpleDemo.properties
 
 ```
 .
-├── SimpleDemo.java            # 🎯 모든 기능이 여기 있음!
-├── SimpleDemo.properties      # ⚙️ 설정 파일 (properties)
+├── SimpleDemo.java            # 🎯 모든 기능 (HTTP/HTTPS, JWT 지원)
+├── SimpleDemo.properties      # ⚙️ 설정 파일
 ├── build.sh                   # 빌드 스크립트
-└── run.sh                      # 실행 스크립트 (빌드 후 생성)
+└── run.sh                      # 실행 스크립트
 ```
+
+## TLS/HTTPS & JWT 지원
+
+### HTTPS 사용
+```bash
+# properties 파일에서
+tls=true
+
+# 또는 명령행
+./run.sh --tls
+```
+
+### JWT 토큰 인증
+```bash
+# properties 파일에서
+token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# 또는 명령행
+./run.sh --token "your-jwt-token"
+```
+
+### 자체 서명 인증서 지원
+- HTTPS에서 자동으로 자체 서명 인증서(Self-signed certificate) 처리
+- 테스트 환경에서 별도 설정 불필요
 
 ## 수동 실행
 

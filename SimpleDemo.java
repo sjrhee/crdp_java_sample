@@ -3,9 +3,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * 단순한 CRDP 데모 - 하나의 파일로 모든 기능 제공
+ * TLS/HTTPS와 JWT 지원
  */
 public class SimpleDemo {
     private static Properties config = new Properties();
@@ -16,6 +22,8 @@ public class SimpleDemo {
     private static String DEFAULT_POLICY = "P01";
     private static String DEFAULT_DATA = "1234567890123";
     private static int DEFAULT_TIMEOUT = 10;
+    private static boolean DEFAULT_TLS = false;
+    private static String DEFAULT_TOKEN = "";
     
     static {
         // SimpleDemo.properties 파일 로드
@@ -32,6 +40,9 @@ public class SimpleDemo {
                 DEFAULT_DATA = config.getProperty("data", DEFAULT_DATA);
                 DEFAULT_TIMEOUT = Integer.parseInt(
                     config.getProperty("timeout", String.valueOf(DEFAULT_TIMEOUT)));
+                DEFAULT_TLS = Boolean.parseBoolean(
+                    config.getProperty("tls", String.valueOf(DEFAULT_TLS)));
+                DEFAULT_TOKEN = config.getProperty("token", DEFAULT_TOKEN);
             }
         } catch (IOException e) {
             // properties 파일이 없으면 기본값 사용
@@ -48,15 +59,20 @@ public class SimpleDemo {
         System.out.println("  --port PORT     포트 번호 (기본: " + DEFAULT_PORT + ")");
         System.out.println("  --policy POLICY 정책 이름 (기본: " + DEFAULT_POLICY + ")");
         System.out.println("  --data DATA     보호할 데이터 (기본: " + DEFAULT_DATA + ")");
+        System.out.println("  --tls           HTTPS 사용 (기본: " + DEFAULT_TLS + ")");
+        System.out.println("  --token TOKEN   JWT 토큰 (Authorization 헤더용)");
         System.out.println("  --help          도움말");
     }
     
     public static void main(String[] args) {
-        // 기본 설정
+        // 기본 설정 (properties 파일에서 로드됨)
         String host = DEFAULT_HOST;
         int port = DEFAULT_PORT;
         String policy = DEFAULT_POLICY;
         String data = DEFAULT_DATA;
+        int timeout = DEFAULT_TIMEOUT;
+        boolean useTLS = DEFAULT_TLS;
+        String token = DEFAULT_TOKEN;
         
         // 명령행 처리
         for (int i = 0; i < args.length; i++) {
@@ -103,6 +119,17 @@ public class SimpleDemo {
                     showHelp();
                     return;
                 }
+            } else if ("--tls".equals(args[i])) {
+                useTLS = true;
+            } else if ("--token".equals(args[i])) {
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    token = args[++i];
+                } else {
+                    System.err.println("오류: --token 옵션에 값이 필요합니다.");
+                    System.err.println();
+                    showHelp();
+                    return;
+                }
             } else if ("--help".equals(args[i])) {
                 showHelp();
                 return;
@@ -115,15 +142,21 @@ public class SimpleDemo {
         }
         
         System.out.println("=== CRDP 간단 데모 ===");
-        System.out.println("서버: " + host + ":" + port);
+        System.out.println("서버: " + (useTLS ? "https" : "http") + "://" + host + ":" + port);
         System.out.println("정책: " + policy);
         System.out.println("데이터: " + data);
+        if (useTLS) {
+            System.out.println("TLS: 활성화됨");
+        }
+        if (!token.isEmpty()) {
+            System.out.println("JWT: 활성화됨");
+        }
         System.out.println();
         
         try {
             // 1. 데이터 보호
             System.out.print("1. 데이터 보호 중... ");
-            String protectedData = protect(host, port, policy, data);
+            String protectedData = protect(host, port, policy, data, useTLS, token, timeout);
             if (protectedData != null) {
                 System.out.println("성공: " + protectedData);
             } else {
@@ -133,7 +166,7 @@ public class SimpleDemo {
             
             // 2. 데이터 복원
             System.out.print("2. 데이터 복원 중... ");
-            String revealedData = reveal(host, port, policy, protectedData);
+            String revealedData = reveal(host, port, policy, protectedData, useTLS, token, timeout);
             if (revealedData != null) {
                 System.out.println("성공: " + revealedData);
             } else {
@@ -156,35 +189,52 @@ public class SimpleDemo {
     /**
      * 데이터 보호
      */
-    private static String protect(String host, int port, String policy, String data) {
-        String url = "http://" + host + ":" + port + "/v1/protect";
+    private static String protect(String host, int port, String policy, String data, boolean useTLS, String token, int timeout) {
+        String protocol = useTLS ? "https" : "http";
+        String url = protocol + "://" + host + ":" + port + "/v1/protect";
         String json = "{\"protection_policy_name\":\"" + policy + "\",\"data\":\"" + data + "\"}";
-        String response = post(url, json);
+        String response = post(url, json, token, timeout);
         return extractValue(response, "protected_data");
     }
     
     /**
      * 데이터 복원
      */
-    private static String reveal(String host, int port, String policy, String protectedData) {
-        String url = "http://" + host + ":" + port + "/v1/reveal";
+    private static String reveal(String host, int port, String policy, String protectedData, boolean useTLS, String token, int timeout) {
+        String protocol = useTLS ? "https" : "http";
+        String url = protocol + "://" + host + ":" + port + "/v1/reveal";
         String json = "{\"protection_policy_name\":\"" + policy + "\",\"protected_data\":\"" + protectedData + "\"}";
-        String response = post(url, json);
+        String response = post(url, json, token, timeout);
         return extractValue(response, "data");
     }
     
     /**
-     * HTTP POST 요청
+     * HTTP/HTTPS POST 요청
      */
-    private static String post(String urlString, String json) {
+    private static String post(String urlString, String json, String token, int timeout) {
         try {
             URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn;
+            
+            if (urlString.startsWith("https")) {
+                // HTTPS 연결 설정 (자체 서명 인증서 지원)
+                conn = (HttpsURLConnection) url.openConnection();
+                HttpsURLConnection httpsConn = (HttpsURLConnection) conn;
+                httpsConn.setSSLSocketFactory(getInsecureSslContext().getSocketFactory());
+                httpsConn.setHostnameVerifier((hostname, session) -> true);
+            } else {
+                // HTTP 연결
+                conn = (HttpURLConnection) url.openConnection();
+            }
             
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
+            if (!token.isEmpty()) {
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+            }
             conn.setDoOutput(true);
-            conn.setConnectTimeout(10000);
+            conn.setConnectTimeout(timeout * 1000);
+            conn.setReadTimeout(timeout * 1000);
             conn.setReadTimeout(10000);
             
             // 요청 전송
@@ -261,5 +311,32 @@ public class SimpleDemo {
             }
             return content.substring(valueStart, valueEnd).trim();
         }
+    }
+    
+    /**
+     * 인증서 검증을 비활성화한 SSL 컨텍스트 생성
+     * (자체 서명 인증서 또는 테스트 목적용)
+     */
+    private static SSLContext getInsecureSslContext() throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+                
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+                
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }
+        };
+        
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        return sc;
     }
 }
