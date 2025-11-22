@@ -96,6 +96,7 @@ public class MinimalDemo {
             URL url = new URL(urlStr);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setSSLSocketFactory(getInsecureSslContext().getSocketFactory());
+            conn.setHostnameVerifier((hostname, session) -> true);  // 호스트명 검증 비활성화
             
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
