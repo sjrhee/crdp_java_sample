@@ -398,4 +398,5 @@ catch (Exception e) {
 
 ## 관련 링크
 - [CRDP API 문서](https://thalesdocs.com/ctp/con/crdp/latest/crdp-apis/index.html)
+- [CipherTrust 정책 적용 방안](CipherTrust_정책_적용_방안.md)
 - [GitHub 저장소](https://github.com/sjrhee/crdp_java_sample)
