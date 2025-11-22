@@ -1,5 +1,4 @@
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -10,7 +9,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
- * 최소한의 CRDP 데모 - 설정 기반, TLS와 JWT만 지원
+ * 최소한의 CRDP 데모 - 설정 기반, HTTPS와 JWT만 지원
  */
 public class MinimalDemo {
     private static Properties config;
@@ -38,22 +37,20 @@ public class MinimalDemo {
         String policy = config.getProperty("policy", "P01");
         String data = config.getProperty("data", "test");
         int timeout = Integer.parseInt(config.getProperty("timeout", "10"));
-        boolean useTLS = Boolean.parseBoolean(config.getProperty("tls", "true"));
         String token = config.getProperty("token", "");
         
-        String scheme = useTLS ? "https" : "http";
-        String protectUrl = String.format("%s://%s:%d/v1/protect", scheme, host, port);
-        String revealUrl = String.format("%s://%s:%d/v1/reveal", scheme, host, port);
+        String protectUrl = String.format("https://%s:%d/v1/protect", host, port);
+        String revealUrl = String.format("https://%s:%d/v1/reveal", host, port);
         
-        System.out.println("=== CRDP 최소 데모 ===");
-        System.out.println("서버: " + scheme + "://" + host + ":" + port);
+        System.out.println("=== CRDP 최소 데모 (HTTPS) ===");
+        System.out.println("서버: https://" + host + ":" + port);
         System.out.println("정책: " + policy);
         System.out.println("데이터: " + data);
         
         try {
             // 1. 데이터 보호
             String protectJson = "{\"protection_policy_name\":\"" + policy + "\",\"data\":\"" + data + "\"}";
-            String protectedData = post(protectUrl, protectJson, token, timeout, useTLS);
+            String protectedData = post(protectUrl, protectJson, token, timeout);
             
             if (protectedData == null) {
                 System.err.println("보호 실패");
@@ -64,7 +61,7 @@ public class MinimalDemo {
             
             // 2. 데이터 복원
             String revealJson = "{\"protection_policy_name\":\"" + policy + "\",\"protected_data\":\"" + protectedData + "\"}";
-            String revealedData = post(revealUrl, revealJson, token, timeout, useTLS);
+            String revealedData = post(revealUrl, revealJson, token, timeout);
             
             if (revealedData == null) {
                 System.err.println("복원 실패");
@@ -86,20 +83,13 @@ public class MinimalDemo {
     }
     
     /**
-     * HTTP/HTTPS POST 요청
+     * HTTPS POST 요청
      */
-    private static String post(String urlStr, String json, String token, int timeout, boolean useTLS) {
+    private static String post(String urlStr, String json, String token, int timeout) {
         try {
             URL url = new URL(urlStr);
-            HttpURLConnection conn;
-            
-            if (useTLS) {
-                HttpsURLConnection httpsConn = (HttpsURLConnection) url.openConnection();
-                httpsConn.setSSLSocketFactory(getInsecureSslContext().getSocketFactory());
-                conn = httpsConn;
-            } else {
-                conn = (HttpURLConnection) url.openConnection();
-            }
+            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+            conn.setSSLSocketFactory(getInsecureSslContext().getSocketFactory());
             
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
