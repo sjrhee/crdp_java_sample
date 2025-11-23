@@ -14,7 +14,7 @@ public class LibraryUsageDemo {
             String policy = "P01";
             String token = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwNzkzNTU2MjAsImlzcyI6Imp3dC1pc3N1ZXIiLCJzdWIiOiJkZXYtdXNlcjAxIiwiaWF0IjoxNzYzNzc5NjY4fQ.OZ1VDGCEms6_jUEmLaHOWAZjpcBewyI9cBo96Z0Z6ZySWSnHR95vg3nISaLfDiKW6AUO0bl7-9X39r2B8bqVOw";
 
-            CrdpClient client = new CrdpClient(endpoint, policy, token, 10);
+            CrdpClient client = new CrdpClient(endpoint, policy, token);
             System.out.println(">>> CRDP 클라이언트 준비 완료");
 
             // ---------------------------------------------------------------

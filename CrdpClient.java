@@ -15,7 +15,7 @@ public class CrdpClient {
     private final String baseUrl;
     private final String policy;
     private final String token;
-    private final int timeout;
+    private static final int TIMEOUT = 5; // 5초 고정
 
     /**
      * 생성자
@@ -23,13 +23,11 @@ public class CrdpClient {
      * @param endpoint CRDP 서버 주소 (예: "192.168.0.1:443")
      * @param policy   보호 정책 이름 (예: "P01")
      * @param token    JWT 인증 토큰
-     * @param timeout  타임아웃 (초)
      */
-    public CrdpClient(String endpoint, String policy, String token, int timeout) {
+    public CrdpClient(String endpoint, String policy, String token) {
         this.baseUrl = "https://" + endpoint;
         this.policy = policy;
         this.token = token;
-        this.timeout = timeout;
     }
 
     /**
@@ -86,8 +84,8 @@ public class CrdpClient {
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + token);
-        conn.setConnectTimeout(timeout * 1000);
-        conn.setReadTimeout(timeout * 1000);
+        conn.setConnectTimeout(TIMEOUT * 1000);
+        conn.setReadTimeout(TIMEOUT * 1000);
         conn.setDoOutput(true);
 
         // 요청 데이터 전송
