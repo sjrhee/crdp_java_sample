@@ -8,6 +8,7 @@ import java.security.cert.X509Certificate;
  * CRDP 클라이언트 라이브러리
  * 
  * 이 클래스는 CRDP API와의 통신을 캡슐화하여 개발자가 쉽게 암호화/복호화 기능을 사용할 수 있게 합니다.
+ * 성능 최적화 및 견고한 오류 처리가 포함되어 있습니다.
  */
 public class CrdpClient {
 
@@ -42,8 +43,13 @@ public class CrdpClient {
      * @throws Exception 통신 오류 또는 서버 오류 발생 시
      */
     public String protect(String plaintext) throws Exception {
+        if (plaintext == null)
+            throw new IllegalArgumentException("입력 데이터는 null일 수 없습니다.");
+
         String url = String.format("https://%s:%d/v1/protect", host, port);
-        String json = String.format("{\"protection_policy_name\":\"%s\",\"data\":\"%s\"}", policy, plaintext);
+        // JSON 이스케이프 처리
+        String safeData = escapeJson(plaintext);
+        String json = String.format("{\"protection_policy_name\":\"%s\",\"data\":\"%s\"}", policy, safeData);
 
         String response = post(url, json);
         return extractValue(response, "protected_data");
@@ -57,9 +63,13 @@ public class CrdpClient {
      * @throws Exception 통신 오류 또는 서버 오류 발생 시
      */
     public String reveal(String ciphertext) throws Exception {
+        if (ciphertext == null)
+            throw new IllegalArgumentException("입력 데이터는 null일 수 없습니다.");
+
         String url = String.format("https://%s:%d/v1/reveal", host, port);
-        String json = String.format("{\"protection_policy_name\":\"%s\",\"protected_data\":\"%s\"}", policy,
-                ciphertext);
+        // JSON 이스케이프 처리
+        String safeData = escapeJson(ciphertext);
+        String json = String.format("{\"protection_policy_name\":\"%s\",\"protected_data\":\"%s\"}", policy, safeData);
 
         String response = post(url, json);
         return extractValue(response, "data");
@@ -83,37 +93,88 @@ public class CrdpClient {
         conn.setReadTimeout(timeout * 1000);
         conn.setDoOutput(true);
 
+        // 요청 데이터 전송
         try (OutputStream os = conn.getOutputStream()) {
             os.write(json.getBytes(StandardCharsets.UTF_8));
         }
 
         int status = conn.getResponseCode();
-        if (status >= 400) {
-            throw new RuntimeException("CRDP 서버 오류 (HTTP " + status + ")");
+        InputStream stream = (status >= 200 && status < 300) ? conn.getInputStream() : conn.getErrorStream();
+
+        if (stream == null) {
+            throw new RuntimeException("CRDP 서버 오류 (HTTP " + status + "): 응답 없음");
         }
 
         StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = br.readLine()) != null)
                 response.append(line);
         }
+
+        if (status >= 400) {
+            throw new RuntimeException("CRDP 서버 오류 (HTTP " + status + "): " + response.toString());
+        }
+
         return response.toString();
     }
 
     /**
      * JSON 파싱 (내부 사용)
+     * 단순 문자열 파싱보다 견고하게 개선됨
      */
     private String extractValue(String json, String key) {
-        String pattern = "\"" + key + "\":";
-        int start = json.indexOf(pattern);
-        if (start == -1)
+        if (json == null)
             return null;
 
-        start = json.indexOf("\"", start + pattern.length()) + 1;
-        int end = json.indexOf("\"", start);
-        return json.substring(start, end);
+        String searchKey = "\"" + key + "\"";
+        int keyIndex = json.indexOf(searchKey);
+        if (keyIndex == -1)
+            return null;
+
+        // 키 뒤의 콜론(:) 찾기
+        int colonIndex = json.indexOf(":", keyIndex + searchKey.length());
+        if (colonIndex == -1)
+            return null;
+
+        // 값의 시작 따옴표(") 찾기
+        int valueStartIndex = json.indexOf("\"", colonIndex + 1);
+        if (valueStartIndex == -1)
+            return null;
+
+        // 값의 끝 따옴표(") 찾기 - 이스케이프 문자 처리
+        int valueEndIndex = valueStartIndex + 1;
+        while (valueEndIndex < json.length()) {
+            char c = json.charAt(valueEndIndex);
+            if (c == '\\') {
+                valueEndIndex += 2; // 이스케이프 문자 건너뛰기
+                continue;
+            }
+            if (c == '"') {
+                break;
+            }
+            valueEndIndex++;
+        }
+
+        if (valueEndIndex >= json.length())
+            return null;
+
+        return json.substring(valueStartIndex + 1, valueEndIndex);
+    }
+
+    /**
+     * JSON 특수 문자 이스케이프 처리
+     */
+    private String escapeJson(String data) {
+        if (data == null)
+            return "";
+        return data.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     /**
