@@ -33,7 +33,7 @@ System.out.println("복호화: " + decrypted);
 ## 📁 파일 구조
 - `CrdpClient.java` - 핵심 라이브러리 클래스
 - `crdp-client.jar` - 배포용 JAR 파일
-- `LibraryUsageDemo.java` - 사용 예제
+- `SimpleExample.java` - 간단한 사용 예제
 - `crdp.properties` - 설정 파일
 - `build.sh` - 빌드 스크립트
 - `run.sh` - 실행 스크립트

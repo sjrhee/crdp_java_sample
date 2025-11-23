@@ -3,7 +3,7 @@
  * 
  * "이렇게 쉽습니다!" - 설정하고, 호출하면 끝.
  */
-public class LibraryUsageDemo {
+public class SimpleExample {
 
     public static void main(String[] args) {
         try {

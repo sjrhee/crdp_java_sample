@@ -8,7 +8,7 @@ rm -f *.class
 # 라이브러리 및 예제 컴파일
 echo "라이브러리 빌드 중..."
 javac -source 11 -target 11 CrdpClient.java
-javac -source 11 -target 11 -cp . LibraryUsageDemo.java
+javac -source 11 -target 11 -cp . SimpleExample.java
 
 if [ $? -eq 0 ]; then
     echo "컴파일 성공!"
@@ -22,7 +22,7 @@ if [ $? -eq 0 ]; then
     cat > run.sh << 'EOF'
 #!/bin/bash
 # 라이브러리(JAR)를 사용하여 데모 실행
-java -cp .:crdp-client.jar LibraryUsageDemo
+java -cp .:crdp-client.jar SimpleExample
 EOF
     chmod +x run.sh
     
