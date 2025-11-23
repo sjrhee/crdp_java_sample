@@ -10,7 +10,7 @@ public class LibraryUsageDemo {
             // ---------------------------------------------------------------
             // 1. 초기화 (설정 파일에서 자동 로드)
             // ---------------------------------------------------------------
-            CrdpClient client = CrdpClient.fromConfigFile("crdp.properties");
+            CrdpClient crdp = CrdpClient.fromConfigFile("crdp.properties");
             System.out.println(">>> CRDP 클라이언트 준비 완료 (설정 파일 로드됨)");
 
             // ---------------------------------------------------------------
@@ -19,11 +19,11 @@ public class LibraryUsageDemo {
             String original = "주민등록번호 123456-1234567";
 
             // 암호화
-            String encrypted = client.protect(original);
+            String encrypted = crdp.protect(original);
             System.out.println("암호화: " + encrypted);
 
             // 복호화
-            String decrypted = client.reveal(encrypted);
+            String decrypted = crdp.reveal(encrypted);
             System.out.println("복호화: " + decrypted);
 
         } catch (Exception e) {
