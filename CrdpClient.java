@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 import javax.net.ssl.*;
 import java.security.cert.X509Certificate;
 
@@ -16,6 +17,30 @@ public class CrdpClient {
     private final String policy;
     private final String token;
     private static final int TIMEOUT = 5; // 5초 고정
+
+    /**
+     * 설정 파일에서 클라이언트 생성 (Factory Method)
+     * 
+     * @param filePath 설정 파일 경로 (예: "crdp.properties")
+     * @return 초기화된 CrdpClient 객체
+     * @throws IOException 설정 파일을 읽을 수 없거나 필수 항목이 누락된 경우
+     */
+    public static CrdpClient fromConfigFile(String filePath) throws IOException {
+        Properties config = new Properties();
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            config.load(fis);
+        }
+
+        String endpoint = config.getProperty("endpoint");
+        String policy = config.getProperty("policy");
+        String token = config.getProperty("token");
+
+        if (endpoint == null || policy == null || token == null) {
+            throw new IOException("설정 파일(" + filePath + ")에 필수 항목(endpoint, policy, token)이 누락되었습니다.");
+        }
+
+        return new CrdpClient(endpoint, policy, token);
+    }
 
     /**
      * 생성자
