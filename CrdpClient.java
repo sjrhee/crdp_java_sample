@@ -31,12 +31,12 @@ public class CrdpClient {
             config.load(fis);
         }
 
-        String endpoint = config.getProperty("endpoint");
-        String policy = config.getProperty("policy");
-        String token = config.getProperty("token");
+        String endpoint = config.getProperty("crdp_endpoint");
+        String policy = config.getProperty("crdp_policy");
+        String token = config.getProperty("crdp_jwt");
 
         if (endpoint == null || policy == null || token == null) {
-            throw new IOException("설정 파일(" + filePath + ")에 필수 항목(endpoint, policy, token)이 누락되었습니다.");
+            throw new IOException("설정 파일(" + filePath + ")에 필수 항목(crdp_endpoint, crdp_policy, crdp_jwt)이 누락되었습니다.");
         }
 
         return new CrdpClient(endpoint, policy, token);
