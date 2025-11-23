@@ -16,10 +16,18 @@
 ### 2. 코드 작성 (복사-붙여넣기용)
 
 ```java
-// 1. 초기화 (엔드포인트, 정책, 토큰)
-CrdpClient client = new CrdpClient("192.168.0.233:32182", "P01", "JWT_TOKEN...");
+// 1. 설정 로드 (crdp.properties 파일)
+Properties config = new Properties();
+config.load(new FileInputStream("crdp.properties"));
 
-// 2. 암호화
+// 2. 초기화
+CrdpClient client = new CrdpClient(
+    config.getProperty("endpoint"), 
+    config.getProperty("policy"), 
+    config.getProperty("token")
+);
+
+// 3. 암호화
 String encrypted = client.protect("주민등록번호 123456-1234567");
 System.out.println("암호화: " + encrypted);
 
