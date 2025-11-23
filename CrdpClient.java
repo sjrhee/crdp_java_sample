@@ -12,8 +12,7 @@ import java.security.cert.X509Certificate;
  */
 public class CrdpClient {
 
-    private final String host;
-    private final int port;
+    private final String baseUrl;
     private final String policy;
     private final String token;
     private final int timeout;
@@ -21,15 +20,13 @@ public class CrdpClient {
     /**
      * 생성자
      * 
-     * @param host    CRDP 서버 호스트 (예: "192.168.0.1")
-     * @param port    CRDP 서버 포트 (예: 443)
-     * @param policy  보호 정책 이름 (예: "P01")
-     * @param token   JWT 인증 토큰
-     * @param timeout 타임아웃 (초)
+     * @param endpoint CRDP 서버 주소 (예: "192.168.0.1:443")
+     * @param policy   보호 정책 이름 (예: "P01")
+     * @param token    JWT 인증 토큰
+     * @param timeout  타임아웃 (초)
      */
-    public CrdpClient(String host, int port, String policy, String token, int timeout) {
-        this.host = host;
-        this.port = port;
+    public CrdpClient(String endpoint, String policy, String token, int timeout) {
+        this.baseUrl = "https://" + endpoint;
         this.policy = policy;
         this.token = token;
         this.timeout = timeout;
@@ -46,7 +43,7 @@ public class CrdpClient {
         if (plaintext == null)
             throw new IllegalArgumentException("입력 데이터는 null일 수 없습니다.");
 
-        String url = String.format("https://%s:%d/v1/protect", host, port);
+        String url = baseUrl + "/v1/protect";
         // JSON 이스케이프 처리
         String safeData = escapeJson(plaintext);
         String json = String.format("{\"protection_policy_name\":\"%s\",\"data\":\"%s\"}", policy, safeData);
@@ -66,7 +63,7 @@ public class CrdpClient {
         if (ciphertext == null)
             throw new IllegalArgumentException("입력 데이터는 null일 수 없습니다.");
 
-        String url = String.format("https://%s:%d/v1/reveal", host, port);
+        String url = baseUrl + "/v1/reveal";
         // JSON 이스케이프 처리
         String safeData = escapeJson(ciphertext);
         String json = String.format("{\"protection_policy_name\":\"%s\",\"protected_data\":\"%s\"}", policy, safeData);

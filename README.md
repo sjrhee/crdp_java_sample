@@ -16,8 +16,8 @@
 ### 2. 코드 작성 (복사-붙여넣기용)
 
 ```java
-// 1. 초기화 (호스트, 포트, 정책, 토큰, 타임아웃)
-CrdpClient client = new CrdpClient("192.168.0.233", 32182, "P01", "JWT_TOKEN...", 10);
+// 1. 초기화 (엔드포인트, 정책, 토큰, 타임아웃)
+CrdpClient client = new CrdpClient("192.168.0.233:32182", "P01", "JWT_TOKEN...", 10);
 
 // 2. 암호화
 String encrypted = client.protect("주민등록번호 123456-1234567");
