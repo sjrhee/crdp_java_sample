@@ -16,6 +16,7 @@ public class CrdpClient {
     private final String baseUrl;
     private final String policy;
     private final String token;
+    private final SSLContext sslContext; // SSLContext 재사용을 위한 필드 추가
     private static final int TIMEOUT = 5; // 5초 고정
 
     /**
@@ -39,7 +40,17 @@ public class CrdpClient {
             throw new IOException("설정 파일(" + filePath + ")에 필수 항목(crdp_endpoint, crdp_policy, crdp_jwt)이 누락되었습니다.");
         }
 
-        return new CrdpClient(endpoint, policy, token);
+        CrdpClient client = new CrdpClient(endpoint, policy, token);
+        
+        // 초기 연결 워밍업 (SSL 핸드셰이크 미리 수행)
+        try {
+            client.warmup();
+        } catch (Exception e) {
+            // 워밍업 실패는 치명적이지 않으므로 로그만 남기고 무시 (또는 필요 시 예외 처리)
+            System.err.println("WARN: CRDP 서버 연결 워밍업 실패: " + e.getMessage());
+        }
+
+        return client;
     }
 
     /**
@@ -53,6 +64,32 @@ public class CrdpClient {
         this.baseUrl = "https://" + endpoint;
         this.policy = policy;
         this.token = token;
+        try {
+            this.sslContext = getInsecureSslContext(); // 생성 시 한 번만 초기화
+        } catch (Exception e) {
+            throw new RuntimeException("SSLContext 초기화 실패", e);
+        }
+    }
+
+    /**
+     * 연결 워밍업 (Warm-up)
+     * 
+     * 서버에 가벼운 요청을 보내 SSL 핸드셰이크를 미리 수행하고 연결을 풀에 등록합니다.
+     * 이를 통해 첫 번째 protect/reveal 호출의 지연을 줄일 수 있습니다.
+     */
+    public void warmup() {
+        try {
+            // 의미 없는 데이터로 protect 요청을 보내 연결을 맺음
+            // 실제 데이터 처리는 필요 없으므로 결과는 무시
+            String url = baseUrl + "/v1/protect";
+            String json = String.format("{\"protection_policy_name\":\"%s\",\"data\":\"WARMUP\"}", policy);
+            post(url, json);
+        } catch (Exception e) {
+            // 워밍업 중 오류 발생 시, 실제 호출에서 재시도될 것이므로 여기서는 무시하거나 로그만 남김
+            // 단, 서버가 아예 죽어있는 경우를 대비해 예외를 던지는 것이 나을 수도 있음.
+            // 여기서는 호출자에게 알리기 위해 예외를 그대로 둡니다.
+            throw new RuntimeException("Warm-up failed", e);
+        }
     }
 
     /**
@@ -102,8 +139,8 @@ public class CrdpClient {
         URL url = new URL(urlStr);
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 
-        // SSL 검증 무시 (테스트/사내망용)
-        conn.setSSLSocketFactory(getInsecureSslContext().getSocketFactory());
+        // SSL 검증 무시 (테스트/사내망용) - 재사용된 SSLContext 사용
+        conn.setSSLSocketFactory(this.sslContext.getSocketFactory());
         conn.setHostnameVerifier((hostname, session) -> true);
 
         conn.setRequestMethod("POST");
