@@ -54,4 +54,4 @@ System.out.println("복호화: " + decrypted);
 - [**CipherTrust 정책 적용 방안 및 구조도**](docs/CipherTrust_정책_적용_방안.md)
 - [**성능에 영향을 미치는 요소**](docs/성능에_영향을_미치는_요소.md)
 - [**실무 적용 시 성능 및 안정성 개선 제안**](docs/PERFORMANCE_GUIDE.md)
-- [CRDP API 문서](https://thalesdocs.com/ctp/con/crdp/latest/crdp-apis/index.html)
+- [**CRDP API 문서**](https://thalesdocs.com/ctp/con/crdp/latest/crdp-apis/index.html)
