@@ -3,14 +3,14 @@
 이 샘플 코드는 CRDP API 사용법을 이해하기 위한 목적으로 작성되었습니다. 실제 운영 환경(Production)에 적용할 때는 다음과 같은 개선 사항을 고려하는 것이 좋습니다.
 
 ## 1. 전문 HTTP 클라이언트 라이브러리 사용
-현재 코드는 JDK 기본 `HttpsURLConnection`을 사용하고 있습니다. 가볍고 의존성이 없다는 장점이 있지만, 고성능 처리를 위해서는 한계가 있습니다.
+현재 코드는 **Java 11의 표준 `HttpClient`**를 사용하고 있습니다. 이는 JDK에 내장되어 있어 별도의 의존성이 필요 없으며, 기본적인 Connection Pooling과 HTTP/2 지원을 제공합니다.
 
-**제안:**
-- **Apache HttpClient** 또는 **OkHttp** 사용을 권장합니다.
+**추가 개선 제안:**
+- 더 세밀한 제어가 필요한 경우 **Apache HttpClient** 또는 **OkHttp** 사용을 고려할 수 있습니다.
 - **이점:**
     - 더 강력하고 세밀한 **Connection Pooling** 관리 (최대 연결 수, 유휴 시간 설정 등)
-    - HTTP/2 지원 (OkHttp, Java 11+ HttpClient)
     - 투명한 재시도(Retry) 및 복구 로직
+    - 더 많은 커스터마이징 옵션
 
 ## 2. 싱글톤(Singleton) 패턴 적용
 `CrdpClient`는 내부적으로 `SSLContext`와 연결 풀(HTTP 클라이언트 내부)을 관리합니다.
@@ -28,11 +28,11 @@
 - I/O 대기 시간 동안 스레드를 차단하지 않아 리소스 효율성이 높아집니다.
 
 ## 4. 견고한 JSON 라이브러리 사용
-샘플 코드는 의존성을 줄이기 위해 문자열 조작으로 JSON을 처리하고 있습니다. 이는 복잡한 데이터나 특수 문자 처리에 취약할 수 있습니다.
+현재 코드는 **Gson**을 사용하여 JSON을 처리하고 있습니다. 이는 검증된 라이브러리로 안정적이고 효율적입니다.
 
-**제안:**
-- **Jackson** 또는 **Gson**과 같은 검증된 JSON 라이브러리를 사용하세요.
-- 객체 매핑(Object Mapping)을 통해 코드의 가독성과 유지보수성을 높일 수 있습니다.
+**참고:**
+- 필요에 따라 **Jackson**으로 전환할 수도 있습니다 (Spring 환경에서는 Jackson이 기본)
+- 객체 매핑(Object Mapping)을 통해 코드의 가독성과 유지보수성이 높습니다.
 
 ## 5. 예외 처리 및 재시도(Retry) 전략
 네트워크 통신은 언제든 일시적인 오류가 발생할 수 있습니다.
@@ -51,10 +51,10 @@
 
 ## 요약
 
-| 구분 | 샘플 코드 (현재) | 실무 권장 (Production) |
+| 구분 | 현재 구현 | 실무 권장 (Production) |
 | :--- | :--- | :--- |
-| **HTTP Client** | `HttpsURLConnection` | `Apache HttpClient`, `OkHttp`, `WebClient` |
+| **HTTP Client** | `Java 11 HttpClient` | `Apache HttpClient`, `OkHttp` (선택적) |
 | **인스턴스 관리** | 필요 시 생성 | **Singleton** (Spring Bean 등) |
 | **I/O 방식** | Blocking | **Non-blocking / Async** (필요 시) |
-| **JSON 처리** | String Manipulation | `Jackson`, `Gson` |
+| **JSON 처리** | `Gson` | `Jackson` (Spring 환경), `Gson` |
 | **로그** | `System.out` | `SLF4J` + `Logback` |

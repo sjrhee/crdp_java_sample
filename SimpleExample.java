@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 /**
  * CRDP 클라이언트 라이브러리 사용 예제
  * 
@@ -19,14 +21,18 @@ public class SimpleExample {
             String original = "주민등록번호 123456-1234567";
 
             // 암호화
-            String encrypted = crdp.protect(original);
+            String encrypted = crdp.enc(original);
             System.out.println("암호화: " + encrypted);
 
             // 복호화
-            String decrypted = crdp.reveal(encrypted);
+            String decrypted = crdp.dec(encrypted);
             System.out.println("복호화: " + decrypted);
 
+        } catch (IOException e) {
+            System.err.println("설정 파일 로드 실패: " + e.getMessage());
+            e.printStackTrace();
         } catch (Exception e) {
+            System.err.println("CRDP 작업 실패: " + e.getMessage());
             e.printStackTrace();
         }
     }
